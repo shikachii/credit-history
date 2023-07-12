@@ -1,10 +1,10 @@
 package main
 
 import (
-	"github.com/shikachii/credit-history/lib"
+	"github.com/aws/aws-lambda-go/lambda"
+	"github.com/shikachii/credit-history/lambda/recordCreditHistory"
 )
 
 func main() {
-	lib.Parse()
-	// fmt.Println("Hello, world!")
+	lambda.Start(recordCreditHistory.Handler)
 }
