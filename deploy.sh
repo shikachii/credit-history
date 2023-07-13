@@ -1,0 +1,1 @@
+aws s3 cp bin/function.zip s3://credit-history-shikachii/function.zip --profile creditHistory

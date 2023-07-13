@@ -3,21 +3,29 @@ package lib
 import (
 	"fmt"
 	"regexp"
+	"strconv"
+	"strings"
+	"time"
+
+	"github.com/shikachii/credit-history/domain/model"
 )
 
-type CreditHistory struct {
-	Date string
-	Shop string
-	Amount string
-	Transaction string
-	Card string
+func str2time(str string) time.Time {
+	loc, _ := time.LoadLocation("Asia/Tokyo")
+	parsedTime, _ := time.ParseInLocation("2006/01/02 15:04", str, loc)
+	return parsedTime
 }
 
-func Parse(mail string) (*CreditHistory, error) {
-	ch := CreditHistory{}
+func time2unix(t time.Time) int64 {
+	return t.Unix()
+}
+
+func Parse(mail string) (*model.CreditHistory, error) {
+	ch := model.CreditHistory{}
+	mail = strings.ReplaceAll(mail, "\r", "")
+	mail = strings.ReplaceAll(mail, "\n", "\n ")
 
 	exp, err := regexp.Compile(`◇利用日：(.*)\n`)
-	
 	if err != nil {
 		fmt.Println(err.Error())
 		return nil, err
@@ -25,9 +33,10 @@ func Parse(mail string) (*CreditHistory, error) {
 	if date := exp.FindStringSubmatch(mail); len(date) != 0 {
 		fmt.Println(date[1])
 		ch.Date = date[1]
+		unixtime := time2unix(str2time(ch.Date))
+		ch.Timestamp = strconv.FormatInt(unixtime, 10)
 	} else {
-		ch.Date = mail
-		return &ch, fmt.Errorf("date not found")
+		return nil, fmt.Errorf("date not found")
 	}
 
 	exp, err = regexp.Compile(`◇利用先：(.*)`)
@@ -45,8 +54,9 @@ func Parse(mail string) (*CreditHistory, error) {
 		return nil, err
 	}
 	amount := exp.FindStringSubmatch(mail)[1]
-	fmt.Println(amount)
-	ch.Amount = amount
+	fmt.Println(amount) 
+	amount = strings.Split(amount, "円")[0]
+	ch.Amount = strings.ReplaceAll(amount, ",", "")
 
 	exp, err = regexp.Compile(`◇利用取引：(.*)`)
 	if err != nil {
