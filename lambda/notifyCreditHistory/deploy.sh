@@ -1,0 +1,1 @@
+aws s3 cp bin/notifyCreditHistory.zip s3://credit-history-shikachii/notifyCreditHistory.zip --profile creditHistory
