@@ -1,6 +1,8 @@
 package lib
 
 import (
+	"strconv"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
@@ -29,14 +31,14 @@ func GetItem(
 // dynamoDBのtimestampフィールドから指定した期間のデータを取得する
 func ScanBetweenTimestamp(
 	tableName string,
-	beforeTimestamp string,
-	afterTimestamp string,
+	beforeTimestamp int64,
+	afterTimestamp int64,
 ) (*[]model.CreditHistory, error) {
 	// 7/13: 1689174000, 7/14: 1689260400
 	// timestampの範囲を指定する
 	filter := expression.Name("timestamp").Between(
-		expression.Value((&dynamodb.AttributeValue{}).SetN(beforeTimestamp)),
-		expression.Value((&dynamodb.AttributeValue{}).SetN(afterTimestamp)),
+		expression.Value((&dynamodb.AttributeValue{}).SetN(strconv.FormatInt(beforeTimestamp, 10))),
+		expression.Value((&dynamodb.AttributeValue{}).SetN(strconv.FormatInt(afterTimestamp, 10))),
 	)
 	expr, err := expression.NewBuilder().WithFilter(filter).Build()
 	if err != nil {

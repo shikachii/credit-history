@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"strconv"
 
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/shikachii/credit-history/domain/model"
@@ -11,7 +12,8 @@ import (
 
 func Handler(ctx context.Context) ([]model.CreditHistory, error) {
 	// 前日と当日の0:00のCreditHistoryを取得する
-	chs, err := lib.ScanBetweenTimestamp("credit-history", "1689174000", "1689260400")
+	// chs, err := lib.ScanBetweenTimestamp("credit-history", "1689174000", "1689260400")
+	chs, err := lib.ScanBetweenTimestamp("credit-history", lib.Yesterday(), lib.Today())
 
 	// 3日前から当日の0:00のCreditHistoryを取得する
 	// chs, err := lib.ScanBetweenTimestamp("credit-history", "1689087600", "1689260400")
@@ -20,15 +22,23 @@ func Handler(ctx context.Context) ([]model.CreditHistory, error) {
 		return nil, fmt.Errorf("dynamoDB error: %w", err)
 	}
 
+	var todayAmount int64 = 0
 	for _, ch := range *chs {
-		fmt.Println(ch)
+		amount, err := strconv.ParseInt(ch.Amount, 10, 64)
+		if err != nil {
+			return nil, fmt.Errorf("strconv error: %w", err)
+		}
+		todayAmount += amount
 	}
+
+	text := fmt.Sprintf(`今日の利用額: %d円\n昨日: %d, 今日%d`, todayAmount, lib.Yesterday(), lib.Today()); 
+	// \n前日の利用額: %s円(%s円)`, (*chs)[1].Amount)
 
 	// slackに通知する
 	sm := lib.SlackMessage{
 		Channel:   "#credit-history",
 		Username:  "notifyCreditHistory",
-		Text:      "test",
+		Text:      text,
 		IconEmoji: ":ghost:",
 	}
 	if err := lib.SendSlackMessage(sm); err != nil {
