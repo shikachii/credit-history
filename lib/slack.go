@@ -18,13 +18,16 @@ var WEBHOOK_URL = os.Getenv("WEBHOOK_URL")
 
 // SendSlackMessage sends a message to Slack using the Webhook URL
 func SendSlackMessage(sm SlackMessage) error {
-	attachment := slack.Attachment{
-		AuthorName:    "notifyCreditHistory",
-		// AuthorIcon:    "https://avatars2.githubusercontent.com/u/652790",
-		Text:          sm.Text,
-	}
+	// attachment := slack.Attachment{
+	// 	AuthorName:    "notifyCreditHistory",
+	// 	// AuthorIcon:    "https://avatars2.githubusercontent.com/u/652790",
+	// 	Text:          sm.Text,
+	// }
 	msg := slack.WebhookMessage{
-		Attachments: []slack.Attachment{attachment},
+		// Attachments: []slack.Attachment{attachment},
+		Username: sm.Username,
+		IconEmoji: sm.IconEmoji,
+		Text: sm.Text,
 	}
 
 	if err := slack.PostWebhook(WEBHOOK_URL, &msg); err != nil {

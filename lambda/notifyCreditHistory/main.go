@@ -31,15 +31,25 @@ func Handler(ctx context.Context) ([]model.CreditHistory, error) {
 		todayAmount += amount
 	}
 
-	text := fmt.Sprintf(`今日の利用額: %d円\n昨日: %d, 今日%d`, todayAmount, lib.Yesterday(), lib.Today()); 
+	chs, err = lib.ScanBetweenTimestamp("credit-history", lib.Yesterday() - (24 * 60 * 60), lib.Yesterday())
+	var yesterdayAmount int64 = 0
+	for _, ch := range *chs {
+		amount, err := strconv.ParseInt(ch.Amount, 10, 64)
+		if err != nil {
+			return nil, fmt.Errorf("strconv error: %w", err)
+		}
+		yesterdayAmount += amount
+	}
+
+	text := fmt.Sprintf("前日の利用額: %d円 (前々日比 %+d円)", todayAmount, todayAmount - yesterdayAmount); 
 	// \n前日の利用額: %s円(%s円)`, (*chs)[1].Amount)
 
 	// slackに通知する
 	sm := lib.SlackMessage{
 		Channel:   "#credit-history",
-		Username:  "notifyCreditHistory",
+		Username:  "通知くん",
 		Text:      text,
-		IconEmoji: ":ghost:",
+		IconEmoji: ":green_heart:",
 	}
 	if err := lib.SendSlackMessage(sm); err != nil {
 		return nil, fmt.Errorf("slack error: %w", err)
