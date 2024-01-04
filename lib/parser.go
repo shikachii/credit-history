@@ -2,10 +2,13 @@ package lib
 
 import (
 	"fmt"
+	"io"
 	"regexp"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/PuerkitoBio/goquery"
 
 	"github.com/shikachii/credit-history/domain/model"
 )
@@ -75,6 +78,82 @@ func Parse(mail string) (*model.CreditHistory, error) {
 	card := exp.FindStringSubmatch(mail)[1]
 	fmt.Println(card)
 	ch.Card = card
+
+	return &ch, nil
+}
+
+func ParseHtml(htmlReader io.Reader) (*model.CreditHistory, error) {
+	doc, err := goquery.NewDocumentFromReader(htmlReader)
+	if err != nil {
+		return nil, err
+	}
+
+	ch := model.CreditHistory{}
+
+	query := "html body table tr td table tr td table tbody tr td table tbody tr td table tbody tr td table tbody tr td"
+	doc.Find(query).Each(func(i int, s *goquery.Selection) {
+		text := s.Text()
+		trimmedText := strings.TrimSpace(text)
+		replacedText := strings.ReplaceAll(trimmedText, "\n", "")
+
+		// Date, Timestamp
+		if i == 0 {
+			ch.Date = strings.Replace(replacedText, "ご利用日時：", "", 1)
+			unixtime := time2unix(str2time(ch.Date))
+			ch.Timestamp = strconv.FormatInt(unixtime, 10)
+		}
+
+		// Shop, Transaction
+		if i == 1 {
+			ch.Shop = strings.Split(replacedText, "（")[0]
+			ch.Transaction = strings.Replace(strings.Split(replacedText, "（")[1], "）", "", 1)
+		}
+
+		// Amount
+		if i == 2 {
+			ch.Amount = strings.ReplaceAll(strings.Split(replacedText, "円")[0], ",", "")
+		}
+	})
+
+	cardQuery := "html body table tr td table tr td"
+	doc.Find(cardQuery).Each(func(i int, s *goquery.Selection) {
+		text := s.Text()
+		trimmedText := strings.TrimSpace(text)
+		replacedText := strings.ReplaceAll(trimmedText, "\n", "")
+
+		// Card
+		if i == 6 {
+			exp, err := regexp.Compile(`ございます。(.*)について`)
+			if err != nil {
+				fmt.Println(err.Error())
+			}
+			card := exp.FindStringSubmatch(replacedText)[1]
+			ch.Card = card
+		}
+	})
+	/**
+	0: ご利用日時：2024/01/02 10:21,
+	1: Dominos Pizza Japan Inc（買物）,
+	2: 5,747円,
+	3: ,
+	4: Vpassアプリ,
+	5: 生体認証で素早く安全にログイン,
+	6: LINE公式アカウント,
+	7: 簡単にお支払い・ポイント確認,
+	*/
+
+	/*
+	html>body>table>tr>td>table>tr>td>table>tbody>tr>td>table>tbody>tr>td>table>tbody>tr>td>table>tbody>tr>td
+	*/
+
+	fmt.Println(doc)
+	
+	// ch.Date = "2024/01/02 10:21"
+	// ch.Shop = "Dominos Pizza Japan Inc"
+	// ch.Amount = "5747"
+	// ch.Timestamp = "1704158460"
+	// ch.Card = "Ｏｌｉｖｅ／クレジット"
+	// ch.Transaction = "買物"
 
 	return &ch, nil
 }
