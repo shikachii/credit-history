@@ -2,7 +2,6 @@ package lib
 
 import (
 	"fmt"
-	"io"
 	"regexp"
 	"strconv"
 	"strings"
@@ -82,8 +81,8 @@ func Parse(mail string) (*model.CreditHistory, error) {
 	return &ch, nil
 }
 
-func ParseHtml(htmlReader io.Reader) (*model.CreditHistory, error) {
-	doc, err := goquery.NewDocumentFromReader(htmlReader)
+func ParseHtml(htmlMail string) (*model.CreditHistory, error) {
+	doc, err := goquery.NewDocumentFromReader(strings.NewReader(htmlMail))
 	if err != nil {
 		return nil, err
 	}

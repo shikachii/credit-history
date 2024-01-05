@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"strings"
 	"testing"
 
 	"github.com/shikachii/credit-history/domain/model"
@@ -17,7 +16,7 @@ func TestParseHtml(t *testing.T) {
 		"../testdata/jr_mail.html",
 	}
 
-	mailPaths := []io.Reader{}
+	mails := []string{}
 
 	for _, htmlPath := range test_data {
 		f, err := os.Open(htmlPath)
@@ -31,12 +30,12 @@ func TestParseHtml(t *testing.T) {
 			t.Errorf("failed to read file: %v", err)
 		}
 	
-		htmlReader := strings.NewReader(string(b))
-		mailPaths = append(mailPaths, htmlReader)
+		htmlMail := string(b)
+		mails = append(mails, htmlMail)
 	}
 	
 	type args struct {
-		mail io.Reader
+		mail string
 	}
 	tests := []struct {
 		name    string
@@ -47,7 +46,7 @@ func TestParseHtml(t *testing.T) {
 		{
 			name: "Domino Pizza Test",
 			args: args{
-				mail: mailPaths[0],
+				mail: mails[0],
 			},
 			want: &model.CreditHistory{
 				Date:        "2024/01/02 10:21",
@@ -62,7 +61,7 @@ func TestParseHtml(t *testing.T) {
 		{
 			name: "JR Test",
 			args: args{
-				mail: mailPaths[1],
+				mail: mails[1],
 			},
 			want: &model.CreditHistory{
 				Date:        "2023/12/27 23:21",

@@ -15,7 +15,7 @@ type MyEvent struct {
 
 // Handler is the entry point for the lambda function
 func Handler(ctx context.Context, event MyEvent) (*model.CreditHistory, error) {
-	ch, err := lib.Parse(event.Email)
+	ch, err := lib.ParseHtml(event.Email)
 	if err != nil {
 		return ch, err
 	}
