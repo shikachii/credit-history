@@ -1,7 +1,7 @@
 const SPREADSHEET_ID =
-  PropertiesService.getScriptProperties().getProperty('SPREADSHEET_ID')
-const API_KEY = PropertiesService.getScriptProperties().getProperty('API_KEY')
-const EP_URL = PropertiesService.getScriptProperties().getProperty('EP_URL')
+  PropertiesService.getScriptProperties().getProperty('SPREADSHEET_ID') ?? "";
+const API_KEY = PropertiesService.getScriptProperties().getProperty('API_KEY') ?? "";
+const EP_URL = PropertiesService.getScriptProperties().getProperty('EP_URL') ?? "";
 
 const recordCreditHistory = () => {
   const query =
@@ -18,8 +18,8 @@ const recordCreditHistory = () => {
         const data = {
           email: body.replace(/\r/g, '').replace(/\n/g, '\n '),
         }
-        const options = {
-          method: 'POST',
+        const options: GoogleAppsScript.URL_Fetch.URLFetchRequestOptions = {
+          method: 'post',
           headers: {
             'Content-Type': 'application/json',
             'x-api-key': API_KEY,
@@ -36,7 +36,7 @@ const recordCreditHistory = () => {
           const spshe = SpreadsheetApp.openById(SPREADSHEET_ID)
           const sheet = spshe.getSheetByName('main')
 
-          sheet.appendRow(Object.values(resultJson))
+          sheet?.appendRow(Object.values(resultJson))
         }
 
         // message.markRead(); // 既読に設定
@@ -49,6 +49,6 @@ const reportCreditHistory = () => {
   const spshe = SpreadsheetApp.openById(SPREADSHEET_ID)
   const sheet = spshe.getSheetByName('main')
 
-  const filter = sheet.getFilter()
-  console.log(filter.getRange().getColumn())
+  const filter = sheet?.getFilter()
+  console.log(filter?.getRange().getColumn())
 }
