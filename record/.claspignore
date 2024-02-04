@@ -1,0 +1,7 @@
+**/**
+
+!appsscript.json
+!build/*.js
+
+.git/**
+node_modules/**
