@@ -5,10 +5,6 @@ const SPREADSHEET_ID =
 const API_KEY = PropertiesService.getScriptProperties().getProperty('API_KEY') ?? "";
 const EP_URL = PropertiesService.getScriptProperties().getProperty('EP_URL') ?? "";
 
-const readEmail = (email: string) => {
-
-}
-
 type CreditHistory = {
   date: Date;
   shop: string;
@@ -43,6 +39,10 @@ const parseCreditHistory = (body: string): CreditHistory => {
 };
 
 const recordToSpreadSheet = (creditHistory: CreditHistory) => {
+  const spreadSheet = SpreadsheetApp.openById(SPREADSHEET_ID);
+  const mainSheet = spreadSheet.getSheetByName("main");
+
+  mainSheet?.appendRow(Object.values(creditHistory));
 }
 
 const record = () => {
