@@ -1,5 +1,20 @@
 {
-  "devDependencies": {
+  "name": "credit-history",
+  "version": "0.0.1",
+  "scripts": {
+    "lint": "prettier './src/**/*.{js,ts}' --check && eslint './src/**/*.{js,ts}'",
+    "prettier": "prettier --write './src/**/*.{js,ts}' && eslint --fix './src/**/*.{js,ts}'"
+  },
+  "dependencies": {
+    "@google/clasp": "^2.4.2",
     "@types/google-apps-script": "^1.0.78"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^6.20.0",
+    "@typescript-eslint/parser": "^6.20.0",
+    "eslint": "^8.56.0",
+    "eslint-config-prettier": "^9.1.0",
+    "prettier": "^3.2.5",
+    "typescript": "^5.3.3"
   }
 }
