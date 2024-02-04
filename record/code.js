@@ -5,7 +5,7 @@ const EP_URL = PropertiesService.getScriptProperties().getProperty("EP_URL");
 
 const recordCreditHistory = () => {
   const query =
-    "is:unread from:(statement@vpass.ne.jp) subject:(ご利用のお知らせ) after:2023-6-10";
+    "is:unread from:(statement@vpass.ne.jp) subject:(ご利用のお知らせ) after:2023-12-06";
   const threads = GmailApp.search(query);
 
   threads.forEach((thread) => {
@@ -15,8 +15,6 @@ const recordCreditHistory = () => {
       if (message.isUnread()) {
         const body = message.getBody();
         
-        console.log(body);
-
         const data = {
           email: body.replace(/\r/g, "").replace(/\n/g, "\n "),
         };
@@ -41,7 +39,7 @@ const recordCreditHistory = () => {
           sheet.appendRow(Object.values(resultJson));
         }
 
-        // message.markRead(); // 既読に設定
+        message.markRead(); // 既読に設定
       }
     });
   });
