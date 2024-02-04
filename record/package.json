@@ -2,18 +2,21 @@
   "name": "credit-history",
   "version": "0.0.1",
   "scripts": {
+    "build": "rollup -c",
     "lint": "prettier './src/**/*.{js,ts}' --check && eslint './src/**/*.{js,ts}'",
     "prettier": "prettier --write './src/**/*.{js,ts}' && eslint --fix './src/**/*.{js,ts}'"
   },
   "dependencies": {
     "@google/clasp": "^2.4.2",
-    "@types/google-apps-script": "^1.0.78"
+    "@types/google-apps-script": "^1.0.78",
+    "node-html-parser": "^6.1.12"
   },
   "devDependencies": {
     "@babel/plugin-transform-runtime": "^7.23.9",
     "@babel/preset-env": "^7.23.9",
     "@babel/preset-typescript": "^7.23.3",
     "@rollup/plugin-babel": "^6.0.4",
+    "@rollup/plugin-commonjs": "^25.0.7",
     "@rollup/plugin-node-resolve": "^15.2.3",
     "@typescript-eslint/eslint-plugin": "^6.20.0",
     "@typescript-eslint/parser": "^6.20.0",
