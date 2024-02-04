@@ -39,7 +39,7 @@ const recordCreditHistory = () => {
           sheet.appendRow(Object.values(resultJson));
         }
 
-        message.markRead(); // 既読に設定
+        // message.markRead(); // 既読に設定
       }
     });
   });
