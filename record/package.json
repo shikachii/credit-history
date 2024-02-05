@@ -2,7 +2,8 @@
   "name": "credit-history",
   "version": "0.0.1",
   "scripts": {
-    "build": "rollup -c",
+    "build": "npm run lint && rollup -c",
+    "push": "npm run build && clasp push",
     "lint": "prettier './src/**/*.{js,ts}' --check && eslint './src/**/*.{js,ts}'",
     "lint:fix": "prettier --write './src/**/*.{js,ts}' && eslint --fix './src/**/*.{js,ts}'"
   },

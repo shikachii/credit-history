@@ -6,16 +6,16 @@ const extensions = [".ts", ".js"];
 
 const preventTreeShakingPlugin = () => {
   return {
-    name: 'no-treeshaking',
+    name: "no-treeshaking",
     resolveId(id, importer) {
       if (!importer) {
-          // let's not theeshake entry points, as we're not exporting anything in Apps Script files
-        return {id, moduleSideEffects: "no-treeshake" }
+        // let's not theeshake entry points, as we're not exporting anything in Apps Script files
+        return { id, moduleSideEffects: "no-treeshake" };
       }
       return null;
-    }
-  }
-}
+    },
+  };
+};
 
 export default {
   input: "./src/index.ts",
