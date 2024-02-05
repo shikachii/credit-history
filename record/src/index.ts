@@ -5,7 +5,8 @@ const SPREADSHEET_ID = PropertiesService.getScriptProperties().getProperty("SPRE
 const API_KEY = PropertiesService.getScriptProperties().getProperty("API_KEY") ?? "";
 const EP_URL = PropertiesService.getScriptProperties().getProperty("EP_URL") ?? "";
 
-export { record, notify };
+record;
+notify;
 
 const recordCreditHistory = () => {
   const query = "is:unread from:(statement@vpass.ne.jp) subject:(ご利用のお知らせ) after:2023-12-06";

@@ -87,7 +87,8 @@ const recordToSpreadSheet = (creditHistory: CreditHistory) => {
   const spreadSheet = SpreadsheetApp.openById(SPREADSHEET_ID);
   const mainSheet = spreadSheet.getSheetByName("main");
 
-  mainSheet?.appendRow(Object.values(creditHistory));
+  const lastRow = mainSheet?.getLastRow();
+  mainSheet?.appendRow([lastRow, ...Object.values(creditHistory)]);
 };
 
 export const record = () => {
