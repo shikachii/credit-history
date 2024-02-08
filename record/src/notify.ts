@@ -1,4 +1,5 @@
-const SPREADSHEET_ID = PropertiesService.getScriptProperties().getProperty("SPREADSHEET_ID") ?? "";
+const SPREADSHEET_ID = PropertiesService.getScriptProperties().getProperty("SPREADSHEET_ID");
+const SLACK_WEBHOOK_URL = PropertiesService.getScriptProperties().getProperty("SLACK_WEBHOOK_URL");
 
 type CreditHistory = {
   date: string;
@@ -9,47 +10,56 @@ type CreditHistory = {
 };
 
 export const notify = () => {
-  // const today = new Date();
-  // const yesterday = new Date();
-  // yesterday.setDate(today.getDate() - 1);
-  // const spreadSheet = SpreadsheetApp.openById(SPREADSHEET_ID);
-  // const sheet = spreadSheet.getSheetByName("main");
-  // try {
-  //   if (!sheet) {
-  //     throw new Error("Sheet not found");
-  //   }
-  // } catch (error) {
-  //   console.error(error);
-  //   return;
-  // }
-  // const lastRow = sheet.getLastRow();
-  // const lastColumn = sheet.getLastColumn();
-  // const allRange = sheet.getRange(2, 1, lastRow, lastColumn).getValues();
-  // const creditHistories: CreditHistory[] = allRange.map((row) => {
-  //   return {
-  //     date: row[1],
-  //     shop: row[2],
-  //     amount: parseInt(row[3]),
-  //     transaction: row[4],
-  //     card: row[5],
-  //   };
-  // });
-  // // 前日の日付の合計額を取得
-  // const yesterdayCreditHistories = creditHistories.filter((creditHistory) => {
-  //   return new Date(creditHistory.date).getDate() === yesterday.getDate();
-  // });
-  // const yesterdayTotalAmount = yesterdayCreditHistories.reduce((acc, creditHistory) => {
-  //   return acc + creditHistory.amount;
-  // }, 0);
-  // // 前日までの月間合計額を取得
-  // const thisMonthCreditHistories = creditHistories.filter((creditHistory) => {
-  //   return new Date(creditHistory.date).getMonth() === today.getMonth();
-  // });
-  // const thisMonthTotalAmount = thisMonthCreditHistories.reduce((acc, creditHistory) => {
-  //   return acc + creditHistory.amount;
-  // }, 0);
-  // // slackに通知
-  // // const slackApp = SlackApp.create("SLACK_TOKEN");
-  // // slackApp.postMessageToChannel("channel", `昨日の合計額: ${yesterdayTotalAmount}`);
-  // // slackApp.postMessageToChannel("channel", `今月の合計額: ${thisMonthTotalAmount}`);
+  if (!SPREADSHEET_ID) {
+    throw new Error("SPREADSHEET_ID not found");
+  }
+  const sheet = SpreadsheetApp.openById(SPREADSHEET_ID);
+
+  // day-aggregateシートの最後尾の行を取得
+  const dayAggregateSheet = sheet.getSheetByName("day-aggregate");
+  if (!dayAggregateSheet) {
+    throw new Error("Sheet not found");
+  }
+  const dayAggregateSheetLastRow = dayAggregateSheet.getLastRow();
+  const dayAggregateAmount = dayAggregateSheet.getRange(dayAggregateSheetLastRow, 2).getValue() as number;
+
+  // aggregateシートの最後尾の行を取得
+  const aggregateSheet = sheet.getSheetByName("aggregate");
+  if (!aggregateSheet) {
+    throw new Error("Sheet not found");
+  }
+  const aggregateSheetLastRow = aggregateSheet.getLastRow();
+  const aggregateAmount = aggregateSheet.getRange(aggregateSheetLastRow, 2).getValue() as number;
+
+  // 日・月の使用金額をslackに通知
+  if (!SLACK_WEBHOOK_URL) {
+    throw new Error("SLACK_WEBHOOK_URL not found");
+  }
+  UrlFetchApp.fetch(SLACK_WEBHOOK_URL, {
+    method: "post",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    payload: JSON.stringify({
+      username: "通知くん",
+      icon_emoji: ":moneybag:",
+      text: `昨日の使用金額: ${dayAggregateAmount}円\n今月の使用金額: ${aggregateAmount}円`,
+    }),
+  });
+
+  // day-aggregateシートの最後尾に今日の日付を追加
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  dayAggregateSheet.appendRow([
+    today,
+    `=SUMIFS(main!$D$2:$D$996, main!$B$2:$B$996, ">="&A${dayAggregateSheetLastRow + 1}, main!$B$2:$B$996, "<"&A${dayAggregateSheetLastRow + 1}+1)`,
+  ]);
+
+  // 今日が月初の場合、aggregateシートに今日の日付を追加
+  if (today.getDate() === 1) {
+    aggregateSheet.appendRow([
+      today,
+      `=SUMIFS(main!$D$2:$D$996, main!$B$2:$B$996, ">="&A${aggregateSheetLastRow + 1}, main!$B$2:$B$996, "<"&EDATE(A${aggregateSheetLastRow + 1}, 1))`,
+    ]);
+  }
 };
